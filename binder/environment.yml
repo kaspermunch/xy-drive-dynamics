@@ -1,6 +1,9 @@
 name: xy-drive-dynamics
 channels:
   - defaults
+  - conda-forge
+  - gwforg
+  - kaspermunch
 dependencies:
   - ipyparallel
   - notebook
