@@ -11,20 +11,39 @@ initialize()
 	initializeTreeSeq();
 	
 	// global constants
+	defineConstant("OUTPUT_PREFIX", "output");
+
 	defineConstant("MUT_RATE", 1.5e-8);
-	defineConstant("MUT_RATE_AMP", 1e-2);
+	defineConstant("MUT_RATE_AMP", 5e-6);
 	defineConstant("MUT_RATE_AMP_XY_DIST", c(0.5, 0.5)); // the actual m6 and m7 rates on x and y are MUT_RATE_AMP * MUT_RATE_AMP_XY_DIST I.e. each MUT_RATE_AMP / 2 now
-	defineConstant("REC_RATE", 1e-8);
+	defineConstant("REC_RATE", 1e-4);
 	defineConstant("D_PROPORTION", 0.8);
 	defineConstant("CHR_LEN", 1000);
-	defineConstant("AMPLICON_LEN", 1);
-	defineConstant("SEX_CHR_SEGMENT_LEN", 150000000);
+	defineConstant("AMPLICON_LEN", 1000);
+	defineConstant("SEX_CHR_SEGMENT_LEN", 5000);
 	defineConstant("SEP_LEN", 2);
 	defineConstant("POPULATION_SIZE", 1000);
 	defineConstant("K", POPULATION_SIZE);
-	defineConstant("SAMPLE_INTERVAL", 0);	
+	defineConstant("SAMPLE_INTERVAL", 10);	
 //	defineConstant("DRIVE_S", 1); 
 //	defineConstant("SPERMATOGENIC_FAILURE_S", 2); 
+	
+	
+//	// global constants
+//	defineConstant("MUT_RATE", 1.5e-8);
+//	defineConstant("MUT_RATE_AMP", 1e-2);
+//	defineConstant("MUT_RATE_AMP_XY_DIST", c(0.5, 0.5)); // the actual m6 and m7 rates on x and y are MUT_RATE_AMP * MUT_RATE_AMP_XY_DIST I.e. each MUT_RATE_AMP / 2 now
+//	defineConstant("REC_RATE", 1e-8);
+//	defineConstant("D_PROPORTION", 0.8);
+//	defineConstant("CHR_LEN", 1000);
+//	defineConstant("AMPLICON_LEN", 1);
+//	defineConstant("SEX_CHR_SEGMENT_LEN", 150000000);
+//	defineConstant("SEP_LEN", 2);
+//	defineConstant("POPULATION_SIZE", 1000);
+//	defineConstant("K", POPULATION_SIZE);
+//	defineConstant("SAMPLE_INTERVAL", 0);	
+////	defineConstant("DRIVE_S", 1); 
+////	defineConstant("SPERMATOGENIC_FAILURE_S", 2); 
 
 	// ends of genomic segments
 	ends = c(
@@ -137,7 +156,7 @@ function (f)seeded_pseudo_random(f seed) {
 //	n = 111111;
 //	for (i in 1:(10+seed)) {
 	n = asInteger(123456 + (seed^digits % 123456));
-	for (i in 1:1) {
+	for (i in 1:10) {
 		s = format("%d", c(n*n));
 		f = asInteger((nchar(s) - digits) / 2);
 		n = asInteger(substr(s, f, f+digits));
@@ -277,16 +296,18 @@ reproduction() {
 // live plotting
 1: early() {
 
-	// testing plot
+   // testing plot
 	if (sim.cycle % 10 == 0) {
-		for (i in 0:10000)
+//		sim.setValue("test") = c();
+		for (i in 0:10000) {
 			sim.setValue("test", c(sim.getValue("test"), seeded_pseudo_random(i/100)));
+		}
 		updatePlot();
-	}
-
+	}		
+		
 	if (SAMPLE_INTERVAL == 0)
 		return;
-		
+	
 	// update vector of stats
 	if (sim.cycle % SAMPLE_INTERVAL == 0) {	
 	
@@ -431,6 +452,13 @@ function (void)updatePlot(void) {
 		vals = vals[vals!=ignore];
 		
 		
+		bins = c(0.0);
+		counts = c(0.0);
+		nr_bins = 100;
+//		for (i in 1:nr_bins) {
+//			bins = c(bins, i*1/nr_bins);
+//			counts = c(counts, 0);
+//		}		
 		bins = c(0.0, 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
 		counts = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		for (i in 0:(size(bins)-2)) {
@@ -527,9 +555,12 @@ modifyChild() {
 //}
 
 // end simulation and output trees
-5000 late() {
+50 late() {
 	p1.outputMSSample(10, replace=F, requestedSex="F");
-	sim.treeSeqOutput("out.trees");
+	sim.treeSeqOutput(OUTPUT_PREFIX+".trees");
+	print(OUTPUT_PREFIX+".trees");
+	if (SAMPLE_INTERVAL > 0)
+		system("cp", args=c(pngPath, OUTPUT_PREFIX+".png"));	
 	sim.simulationFinished();
 }
 
